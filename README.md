@@ -13,6 +13,12 @@ Human vs AI strategy, runnable as a standalone live demo with real
 visualization and metrics, comparable side by side on a shared scenario,
 and benchmarkable over multiple automated games.
 
+## 🚀 Live Demo
+
+🎮 **[Play AI Battleship Online](https://ai-battleship.onrender.com/)**
+
+💻 **[View Source Code](https://github.com/Archie0406/ai-battleship)**
+
 ## What's implemented right now
 
 - **Three game modes**: Human vs AI (9 real strategies including the new
