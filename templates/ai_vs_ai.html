@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+{% block title %}AI vs AI — AI Battleship{% endblock %}
+{% set active_page = 'play' %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/game.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/lab.css') }}">
+{% endblock %}
+
+{% block content %}
+<section class="page-header container">
+  <span class="eyebrow">// Autonomous Engagement</span>
+  <h1>AI vs AI</h1>
+  <p>Assign each commander a strategy and watch them battle it out — every shot, state transition, and search is real and live.</p>
+</section>
+
+<section class="container">
+  <div class="mode-selector">
+    <a href="{{ url_for('play') }}" class="mode-card">
+      <span class="mode-name">Human vs AI</span>
+      <span class="mode-desc">Place your fleet, then trade shots with a live reasoning AI.</span>
+      <span class="mode-tag">Play</span>
+    </a>
+    <div class="mode-card active">
+      <span class="mode-name">AI vs AI</span>
+      <span class="mode-desc">Watch two AI Commanders fight it out with fully configurable strategies.</span>
+      <span class="mode-tag">● Spectating now</span>
+    </div>
+    <a href="{{ url_for('ai_lab') }}" class="mode-card">
+      <span class="mode-name">Algorithm Lab</span>
+      <span class="mode-desc">Inspect the reasoning systems behind every AI decision.</span>
+      <span class="mode-tag">Explore</span>
+    </a>
+  </div>
+
+  <div class="aivai-controls">
+    <div class="control-group">
+      <span class="control-label">AI Commander 01</span>
+      <select class="select-dark" id="agentASelect">
+        <option value="commander1" selected>Commander — Probability + Search</option>
+        <option value="commander2">Commander — Minimax + Planning</option>
+        <option value="probability">Probability Density</option>
+        <option value="random">Random Targeting</option>
+        <option value="bfs">BFS Search</option>
+        <option value="dfs">DFS Search</option>
+        <option value="astar">A* Search</option>
+        <option value="reasoning">Knowledge &amp; Reasoning</option>
+        <option value="planning">Tactical Planner</option>
+        <option value="minimax">Minimax + Alpha-Beta</option>
+      </select>
+    </div>
+    <div class="control-group">
+      <span class="control-label">AI Commander 02</span>
+      <select class="select-dark" id="agentBSelect">
+        <option value="commander1">Commander — Probability + Search</option>
+        <option value="commander2" selected>Commander — Minimax + Planning</option>
+        <option value="probability">Probability Density</option>
+        <option value="random">Random Targeting</option>
+        <option value="bfs">BFS Search</option>
+        <option value="dfs">DFS Search</option>
+        <option value="astar">A* Search</option>
+        <option value="reasoning">Knowledge &amp; Reasoning</option>
+        <option value="planning">Tactical Planner</option>
+        <option value="minimax">Minimax + Alpha-Beta</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="aivai-controls">
+    <button class="btn btn-primary" id="startBtn">Start Match</button>
+    <button class="btn btn-ghost" id="pauseBtn" disabled>Pause</button>
+    <button class="btn btn-ghost" id="stepBtn">Step Once</button>
+    <button class="btn btn-ghost" id="newMatchBtn">New Match</button>
+    <label class="speed-label">Speed
+      <input type="range" id="speedSlider" min="80" max="1000" value="350" step="10">
+    </label>
+  </div>
+
+  <div class="hud-bar">
+    <div class="hud-item"><span class="hud-value" id="hudTurnAgent">—</span><span class="hud-label">Current Turn</span></div>
+    <div class="hud-item"><span class="hud-value" id="hudMovesA">0</span><span class="hud-label">Commander 01 Shots</span></div>
+    <div class="hud-item"><span class="hud-value" id="hudMovesB">0</span><span class="hud-label">Commander 02 Shots</span></div>
+    <div class="hud-item"><span class="hud-value" id="hudHitsA">0</span><span class="hud-label">Commander 01 Hits</span></div>
+    <div class="hud-item"><span class="hud-value" id="hudHitsB">0</span><span class="hud-label">Commander 02 Hits</span></div>
+    <div class="hud-item" id="hudMatchStatusItem"><span class="hud-value" id="hudMatchStatus">Ready</span><span class="hud-label">Match Status</span></div>
+  </div>
+
+  <div class="game-layout">
+    <div class="board-panel glass-panel">
+      <div class="board-panel-head">
+        <h3>AI Commander 01 <span class="agent-tag" id="agentATag">—</span></h3>
+        <span class="turn-flag" id="turnFlagA">Standing by</span>
+      </div>
+      <div class="board-frame">
+        <div class="coord-cols" id="coordColsA"></div>
+        <div class="coord-rows" id="coordRowsA"></div>
+        <div class="board-slot">
+          <div class="board-grid" id="boardA" aria-label="Commander 01 fleet board"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="board-panel glass-panel">
+      <div class="board-panel-head">
+        <h3>AI Commander 02 <span class="agent-tag" id="agentBTag">—</span></h3>
+        <span class="turn-flag" id="turnFlagB">Standing by</span>
+      </div>
+      <div class="board-frame">
+        <div class="coord-cols" id="coordColsB"></div>
+        <div class="coord-rows" id="coordRowsB"></div>
+        <div class="board-slot">
+          <div class="board-grid" id="boardB" aria-label="Commander 02 fleet board"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="game-console">
+    <div class="console-panel glass-panel">
+      <h3>Commander 01 Intelligence</h3>
+      <div id="telemetryA"></div>
+    </div>
+    <div class="console-panel glass-panel">
+      <h3>Commander 02 Intelligence</h3>
+      <div id="telemetryB"></div>
+    </div>
+  </div>
+
+  <div class="game-console">
+    <div class="console-panel glass-panel">
+      <h3>Match Log</h3>
+      <ul class="battle-log" id="aivaiLog"></ul>
+    </div>
+    <div class="console-panel glass-panel">
+      <h3>About This Match</h3>
+      <p style="font-size:0.9rem; color: var(--ink-400); margin:0;">
+        Assign any registered strategy to either commander — pure Probability,
+        Random, BFS/DFS/A* Search, Knowledge &amp; Reasoning, the Tactical
+        Planner, pure Minimax + Alpha-Beta, or one of the two pre-built
+        hybrid Commanders. Both fleets are placed randomly and fully
+        revealed here for spectating. Every algorithm genuinely executes —
+        this is the same pluggable agent architecture (<span class="mono">ai/agent.py</span>)
+        Human vs AI uses.
+      </p>
+    </div>
+  </div>
+</section>
+
+<div class="victory-overlay" id="matchOverlay">
+  <div class="victory-card glass-panel" id="matchCard">
+    <h2 class="victory-title" id="matchTitle">MATCH OVER</h2>
+    <p id="matchSubtitle">Commander 02 wins.</p>
+    <div class="victory-stats">
+      <div class="hero-stat"><span class="stat-value" id="matchMovesA">0</span><span class="stat-label">Commander 01 Shots</span></div>
+      <div class="hero-stat"><span class="stat-value" id="matchMovesB">0</span><span class="stat-label">Commander 02 Shots</span></div>
+    </div>
+    <div class="victory-actions">
+      <button class="btn btn-primary" id="matchReplayBtn">New Match</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/ai_vs_ai.js') }}"></script>
+{% endblock %}

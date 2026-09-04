@@ -1,0 +1,256 @@
+/* base.css — reset, typography, tactical background atmosphere, utilities */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--void);
+  color: var(--ink-100);
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  line-height: 1.6;
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.15;
+  margin: 0 0 var(--sp-3);
+  color: var(--ink-100);
+}
+
+h1 { font-size: var(--fs-h1); }
+h2 { font-size: var(--fs-h2); }
+h3 { font-size: var(--fs-h3); text-transform: uppercase; letter-spacing: 0.12em; }
+
+p { margin: 0 0 var(--sp-3); color: var(--ink-400); }
+
+a {
+  color: var(--cyan);
+  text-decoration: none;
+}
+
+img { max-width: 100%; display: block; }
+
+button, input, select { font-family: inherit; }
+
+::selection {
+  background: var(--cyan-soft);
+  color: var(--void);
+}
+
+/* Focus visibility (accessibility floor) */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 3px;
+  border-radius: var(--radius-s);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Tactical grid + scanline atmosphere, fixed behind all page content */
+/* ------------------------------------------------------------------ */
+.tactical-field {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  background:
+    radial-gradient(ellipse at 20% -10%, rgba(198, 185, 138, 0.10), transparent 55%),
+    radial-gradient(ellipse at 85% 110%, rgba(122, 128, 97, 0.12), transparent 55%),
+    var(--void);
+}
+
+.tactical-field::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(198, 185, 138, 0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(198, 185, 138, 0.055) 1px, transparent 1px);
+  background-size: 46px 46px;
+  mask-image: radial-gradient(ellipse at 50% 0%, black 0%, transparent 75%);
+}
+
+.tactical-field::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(232, 225, 200, 0.018) 0px,
+    rgba(232, 225, 200, 0.018) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  opacity: 0.5;
+}
+
+/* ------------------------------------------------------------------ */
+/* Layout utilities */
+/* ------------------------------------------------------------------ */
+.container {
+  width: 100%;
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 var(--sp-4);
+}
+
+.section {
+  padding: var(--sp-7) 0;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-small);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--cyan);
+}
+
+.glass-panel {
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-top: 2px solid var(--panel-border);
+  border-radius: var(--radius-m);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+}
+
+.glow-border {
+  position: relative;
+}
+.glow-border::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, var(--cyan-soft), transparent 40%, transparent 60%, var(--cyan-soft));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.95rem 1.9rem;
+  border-radius: var(--radius-s);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: transform var(--dur-fast) var(--ease-out),
+              box-shadow var(--dur-fast) var(--ease-out),
+              background var(--dur-fast) var(--ease-out),
+              border-color var(--dur-fast) var(--ease-out);
+}
+.btn:hover { transform: translateY(-2px); }
+.btn:active { transform: translateY(0); }
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--cyan), var(--blue));
+  color: var(--void);
+  box-shadow: 0 8px 30px rgba(198, 185, 138, 0.25);
+}
+.btn-primary:hover {
+  box-shadow: 0 12px 40px rgba(198, 185, 138, 0.4);
+}
+
+.btn-ghost {
+  background: rgba(198, 185, 138, 0.06);
+  color: var(--ink-100);
+  border-color: var(--panel-border);
+}
+.btn-ghost:hover {
+  border-color: var(--cyan-soft);
+  background: rgba(198, 185, 138, 0.1);
+}
+
+.mute-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--panel-border);
+  background: rgba(198, 185, 138, 0.05);
+  color: var(--cyan);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
+}
+.mute-btn:hover {
+  border-color: var(--cyan-soft);
+  background: rgba(198, 185, 138, 0.12);
+}
+.mute-btn.muted {
+  color: var(--ink-700);
+  border-color: var(--panel-border);
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--online);
+  padding: 0.4rem 0.8rem;
+  border: 1px solid rgba(198, 185, 138, 0.3);
+  border-radius: 999px;
+  background: rgba(198, 185, 138, 0.06);
+}
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--online);
+  box-shadow: 0 0 8px var(--online);
+  animation: pulse-dot 1.8s ease-in-out infinite;
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.8); }
+}
+
+.text-center { text-align: center; }
+.mt-0 { margin-top: 0; }
+.mono { font-family: var(--font-mono); }

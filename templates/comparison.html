@@ -1,0 +1,245 @@
+{% extends "base.html" %}
+{% block title %}Compare — AI Battleship{% endblock %}
+{% set active_page = 'compare' %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/game.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/lab.css') }}">
+<style>
+  .compare-table { width: 100%; border-collapse: collapse; font-size: 0.94rem; }
+  .compare-table th, .compare-table td { text-align: left; padding: 0.9rem 1rem; border-bottom: 1px solid var(--panel-border); }
+  .compare-table th { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--cyan-dim); }
+  .compare-table td { color: var(--ink-400); }
+  .compare-table td.metric-name { color: var(--ink-100); font-weight: 600; }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="page-header container">
+  <span class="eyebrow">// Benchmark Console</span>
+  <h1>Algorithm Comparison</h1>
+  <p>Run BFS, DFS, and A* on the exact same scenario board and see the real numbers — nothing here is precomputed or invented.</p>
+</section>
+
+<section class="container section" style="padding-top:0;">
+  <div class="section-header">
+    <span class="eyebrow">// Live Benchmark</span>
+    <h2>BFS vs DFS vs A*</h2>
+    <p>Each run generates one fresh scenario board and executes all three search algorithms against it, so the comparison is apples-to-apples.</p>
+  </div>
+
+  <div class="lab-controls">
+    <div class="control-group">
+      <span class="control-label">&nbsp;</span>
+      <button class="btn btn-primary" id="runCompareBtn">Run Comparison</button>
+    </div>
+    <div class="control-group" id="compareStatusWrap" style="display:none;">
+      <span class="control-label">&nbsp;</span>
+      <span class="turn-flag active" id="compareStatus">Running…</span>
+    </div>
+  </div>
+
+  <div class="glass-panel" style="padding: var(--sp-4);" id="compareResults">
+    <p class="placement-hint" style="margin:0;">Click "Run Comparison" to execute all three algorithms live and see the results here.</p>
+  </div>
+</section>
+
+<section class="container section" style="padding-top:0;">
+  <div class="section-header">
+    <span class="eyebrow">// Live Benchmark</span>
+    <h2>Minimax vs Minimax + Alpha-Beta</h2>
+    <p>Both run on the exact same tracking grid, remaining fleet, and search depth — alpha-beta must reach the identical decision while evaluating fewer or equal nodes, or something is wrong with the pruning.</p>
+  </div>
+
+  <div class="lab-controls">
+    <div class="control-group">
+      <span class="control-label">Search Depth</span>
+      <div class="segmented" id="mmDepthSelector">
+        <button data-depth="2">2</button>
+        <button data-depth="3" class="active">3</button>
+        <button data-depth="4">4</button>
+      </div>
+    </div>
+    <div class="control-group">
+      <span class="control-label">&nbsp;</span>
+      <label class="live-toggle" id="mmLiveToggleWrap">
+        <input type="checkbox" id="mmLiveToggle">
+        Use live Human vs AI grid
+      </label>
+    </div>
+    <div class="control-group">
+      <span class="control-label">&nbsp;</span>
+      <button class="btn btn-primary" id="runMinimaxCompareBtn">Run Comparison</button>
+    </div>
+    <div class="control-group" id="mmCompareStatusWrap" style="display:none;">
+      <span class="control-label">&nbsp;</span>
+      <span class="turn-flag active" id="mmCompareStatus">Running…</span>
+    </div>
+  </div>
+
+  <div class="glass-panel" style="padding: var(--sp-4);" id="mmCompareResults">
+    <p class="placement-hint" style="margin:0;">Click "Run Comparison" to execute both variants live over an identical search tree and see the results here.</p>
+  </div>
+</section>
+
+<section class="container section" style="padding-top:0;">
+  <div class="section-header">
+    <span class="eyebrow">// Multi-Algorithm Dashboard</span>
+    <h2>Compare any combination, side by side</h2>
+    <p>Select any number of algorithms below. Each runs once against the exact same freshly generated scenario, so the comparison is fair — only the metrics that genuinely apply to each algorithm are shown; nothing is filled in.</p>
+  </div>
+
+  <div class="fleet-picker" id="multiAlgoPicker" style="flex-direction: row; flex-wrap: wrap; gap: 0.5rem; margin-bottom: var(--sp-4);"></div>
+
+  <div class="lab-controls">
+    <div class="control-group">
+      <span class="control-label">&nbsp;</span>
+      <button class="btn btn-primary" id="runMultiCompareBtn">Run Comparison</button>
+    </div>
+    <div class="control-group" id="multiCompareStatusWrap" style="display:none;">
+      <span class="control-label">&nbsp;</span>
+      <span class="turn-flag active" id="multiCompareStatus">Running…</span>
+    </div>
+  </div>
+
+  <div class="glass-panel" style="padding: var(--sp-4); overflow-x: auto;" id="multiCompareResults">
+    <p class="placement-hint" style="margin:0;">Select at least one algorithm above and click "Run Comparison".</p>
+  </div>
+</section>
+
+<section class="container section" style="padding-top:0;">
+  <div class="section-header">
+    <span class="eyebrow">// Simulation Runner</span>
+    <h2>Run multiple full games automatically</h2>
+    <p>Pits the chosen strategy against a random-targeting opponent over several complete, automated matches (the same engine AI vs AI uses), reporting real shots, hits, accuracy, and win/loss per game.</p>
+  </div>
+
+  <div class="lab-controls">
+    <div class="control-group">
+      <span class="control-label">Strategy</span>
+      <select class="select-dark" id="simStrategySelect">
+        <option value="probability" selected>Probability Density</option>
+        <option value="random">Random Targeting</option>
+        <option value="bfs">BFS Search</option>
+        <option value="dfs">DFS Search</option>
+        <option value="astar">A* Search</option>
+        <option value="reasoning">Knowledge &amp; Reasoning</option>
+        <option value="planning">Tactical Planner</option>
+        <option value="minimax">Minimax + Alpha-Beta</option>
+        <option value="csp">CSP + Backtracking</option>
+        <option value="commander1">Commander — Probability + Search</option>
+        <option value="commander2">Commander — Minimax + Planning</option>
+      </select>
+    </div>
+    <div class="control-group">
+      <span class="control-label">Number of Games</span>
+      <div class="segmented" id="simGamesSelector">
+        <button data-games="3">3</button>
+        <button data-games="5" class="active">5</button>
+        <button data-games="10">10</button>
+        <button data-games="20">20</button>
+      </div>
+    </div>
+    <div class="control-group">
+      <span class="control-label">&nbsp;</span>
+      <button class="btn btn-primary" id="runSimBtn">Run Simulation</button>
+    </div>
+    <div class="control-group" id="simStatusWrap" style="display:none;">
+      <span class="control-label">&nbsp;</span>
+      <span class="turn-flag active" id="simStatus">Running…</span>
+    </div>
+  </div>
+  <p class="scenario-meta" id="simCapNote" style="margin-bottom: var(--sp-4);">CSP and Minimax-based strategies are capped at 4 games per run since each decision involves a genuine exhaustive search.</p>
+
+  <div class="game-console">
+    <div class="console-panel glass-panel">
+      <h3>Per-Game Results</h3>
+      <div class="sim-game-list" id="simGameList">
+        <p class="placement-hint" style="margin:0;">Choose a strategy and click "Run Simulation".</p>
+      </div>
+    </div>
+    <div class="console-panel glass-panel">
+      <h3>Summary</h3>
+      <div id="simSummary">
+        <p class="placement-hint" style="margin:0;">Results will summarize here once a simulation completes.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="container section" style="padding-top:0;">
+  <div class="section-header">
+    <span class="eyebrow">// Long-Term Roadmap</span>
+    <h2>Full strategy comparison</h2>
+    <p>Once every targeting strategy in the project is implemented, this table will run them all head-to-head over simulated matches.</p>
+  </div>
+  <div class="glass-panel" style="padding: var(--sp-4); overflow-x: auto;">
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th>Strategy</th>
+          <th>Avg. Shots to Win</th>
+          <th>Nodes Expanded</th>
+          <th>Decision Time</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="metric-name">Random Targeting</td>
+          <td>—</td><td>—</td><td>—</td>
+          <td><span class="card-status status-active">Engine ready</span></td>
+        </tr>
+        <tr>
+          <td class="metric-name">Probability Density</td>
+          <td>—</td><td>—</td><td>—</td>
+          <td><span class="card-status status-active">Engine ready</span></td>
+        </tr>
+        <tr>
+          <td class="metric-name">BFS / DFS / A* Search</td>
+          <td>—</td><td>See live benchmark above</td><td>See live benchmark above</td>
+          <td><span class="card-status status-active">Engine ready</span></td>
+        </tr>
+        <tr>
+          <td class="metric-name">Knowledge &amp; Reasoning</td>
+          <td>—</td><td>—</td><td>—</td>
+          <td><span class="card-status status-active">Engine ready</span></td>
+        </tr>
+        <tr>
+          <td class="metric-name">Tactical Planner (Search/Target/Destroy)</td>
+          <td>—</td><td>—</td><td>—</td>
+          <td><span class="card-status status-active">Engine ready</span></td>
+        </tr>
+        <tr>
+          <td class="metric-name">CSP + Backtracking</td>
+          <td>—</td><td>See dashboard above</td><td>See dashboard above</td>
+          <td><span class="card-status status-active">Engine ready</span></td>
+        </tr>
+        <tr>
+          <td class="metric-name">Minimax + Alpha-Beta</td>
+          <td>—</td><td>See live benchmark above</td><td>See live benchmark above</td>
+          <td><span class="card-status status-active">Engine ready</span></td>
+        </tr>
+        <tr>
+          <td class="metric-name">Genetic Algorithm</td>
+          <td>—</td><td>—</td><td>—</td>
+          <td><span class="card-status status-planned">Pending module</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p style="margin-top: var(--sp-4); max-width: 62ch;">
+    Full-match benchmarks (shots-to-win over many simulated games) will land
+    once every remaining strategy is wired into the AI-vs-AI engine and
+    benchmarked at scale — you can already set up any such matchup by hand
+    on the AI vs AI page. The live benchmarks above already report real
+    per-decision metrics for BFS, DFS, A*, and Minimax today.
+  </p>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/comparison.js') }}"></script>
+<script src="{{ url_for('static', filename='js/minimax_compare.js') }}"></script>
+<script src="{{ url_for('static', filename='js/multi_compare.js') }}"></script>
+<script src="{{ url_for('static', filename='js/simulation_runner.js') }}"></script>
+{% endblock %}

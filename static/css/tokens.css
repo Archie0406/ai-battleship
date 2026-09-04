@@ -1,0 +1,67 @@
+/*
+  tokens.css
+  Design token system for AI Battleship — Military Archive / Naval
+  Intelligence Command identity.
+
+  Palette (exact, per spec):
+    #171A14  Deep Olive Black — page base
+    #343A25  Military Olive   — panel / raised surface
+    #7A8061  Muted Khaki      — secondary accent, borders
+    #C6B98A  Sand             — primary accent / important info
+    #A84F32  Rust             — hits, warnings, alerts
+    #E8E1C8  Off-white        — primary text
+*/
+
+:root {
+  /* Color */
+  --void: #171A14;
+  --navy: #21261a;
+  --navy-raised: #2b3020;
+  --panel: rgba(52, 58, 37, 0.72);
+  --panel-border: rgba(122, 128, 97, 0.45);
+
+  --cyan: #C6B98A;              /* primary accent (was cyan) — Sand */
+  --cyan-soft: rgba(198, 185, 138, 0.30);
+  --cyan-dim: #7A8061;          /* Khaki */
+  --blue: #7A8061;              /* secondary accent — Khaki */
+  --hit: #A84F32;                /* Rust */
+  --sunk: #8a3d26;               /* darker Rust */
+  --miss: #5c5f4c;               /* muted olive-khaki */
+  --online: #C6B98A;             /* status/success — Sand (no green in palette) */
+
+  --ink-100: #E8E1C8;            /* Off-white */
+  --ink-400: #A6A484;            /* muted khaki-sand text */
+  --ink-700: #6b6f57;            /* faint / disabled text */
+
+  /* Typography — editorial military-document feel, no sci-fi display font */
+  --font-display: "Oswald", "Segoe UI", sans-serif;
+  --font-body: "Barlow", "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", "Courier New", monospace;
+
+  --fs-hero: clamp(2.75rem, 6vw, 5.5rem);
+  --fs-h1: clamp(2rem, 3.4vw, 3rem);
+  --fs-h2: clamp(1.5rem, 2.4vw, 2rem);
+  --fs-h3: 1.25rem;
+  --fs-body: 1.05rem;
+  --fs-small: 0.85rem;
+
+  /* Spacing scale */
+  --sp-1: 0.25rem;
+  --sp-2: 0.5rem;
+  --sp-3: 1rem;
+  --sp-4: 1.5rem;
+  --sp-5: 2.5rem;
+  --sp-6: 4rem;
+  --sp-7: 6rem;
+
+  /* Layout — restrained, document-like corners (not "excessive rounded cards") */
+  --radius-s: 3px;
+  --radius-m: 6px;
+  --radius-l: 10px;
+  --max-width: 1240px;
+
+  /* Motion — restrained */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-fast: 140ms;
+  --dur-mid: 320ms;
+}

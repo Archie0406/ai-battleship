@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}How It Works — AI Battleship{% endblock %}
+{% set active_page = 'how' %}
+
+{% block content %}
+<section class="page-header container">
+  <span class="eyebrow">// System Briefing</span>
+  <h1>How the AI Thinks</h1>
+  <p>From the moment you fire, the AI runs a real reasoning pipeline to decide where to shoot next. Here's the order it happens in.</p>
+</section>
+
+<section class="container section" style="padding-top:0; max-width: 860px; margin: 0 auto;">
+  <div class="pipeline">
+    <div class="pipeline-step">
+      <span class="pipeline-index">01</span>
+      <div>
+        <h3>Observe</h3>
+        <p>Every shot you take, and every shot the AI takes, updates a shared knowledge state: which cells are unknown, missed, hit, or fully sunk.</p>
+      </div>
+    </div>
+    <div class="pipeline-step">
+      <span class="pipeline-index">02</span>
+      <div>
+        <h3>Score every remaining cell</h3>
+        <p>For each ship still afloat, the AI checks every legal placement on the board and tallies which unfired cells that placement would cover — cells covered by more possible placements score higher.</p>
+      </div>
+    </div>
+    <div class="pipeline-step">
+      <span class="pipeline-index">03</span>
+      <div>
+        <h3>Weight active hits</h3>
+        <p>If a ship has already been hit but not sunk, placements that would explain that hit get extra weight, so the AI naturally hunts along a wounded ship instead of firing randomly.</p>
+      </div>
+    </div>
+    <div class="pipeline-step">
+      <span class="pipeline-index">04</span>
+      <div>
+        <h3>Fire on the highest-scoring cell</h3>
+        <p>The AI takes its shot, the result updates the knowledge state, and — on a hit — it immediately fires again, repeating the loop until it misses.</p>
+      </div>
+    </div>
+    <div class="pipeline-step">
+      <span class="pipeline-index">05</span>
+      <div>
+        <h3>Formal reasoning (upcoming)</h3>
+        <p>Later phases replace and extend this heuristic with a formal CSP + backtracking solver, forward-chaining inference, and sampled minimax evaluation — visible live on the AI Lab page.</p>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

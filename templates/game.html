@@ -1,0 +1,280 @@
+{% extends "base.html" %}
+{% block title %}Play — AI Battleship{% endblock %}
+{% set active_page = 'play' %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/game.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/lab.css') }}">
+{% endblock %}
+
+{% block content %}
+<section class="page-header container">
+  <span class="eyebrow">// Live Engagement</span>
+  <h1>Battle Grid</h1>
+  <p>Fire on the AI's fleet. The AI targets yours using live probability-density reasoning — every hit narrows its next guess.</p>
+</section>
+
+<section class="container">
+  <div class="mode-selector">
+    <div class="mode-card active">
+      <span class="mode-name">Human vs AI</span>
+      <span class="mode-desc">Place your fleet, then trade shots with a live reasoning AI.</span>
+      <span class="mode-tag">● Playing now</span>
+    </div>
+    <a href="{{ url_for('play_ai_vs_ai') }}" class="mode-card">
+      <span class="mode-name">AI vs AI</span>
+      <span class="mode-desc">Watch two agents fight it out — probability density vs. random targeting.</span>
+      <span class="mode-tag">Spectate</span>
+    </a>
+    <a href="{{ url_for('ai_lab') }}" class="mode-card">
+      <span class="mode-name">Algorithm Lab</span>
+      <span class="mode-desc">Inspect the reasoning systems behind every AI decision.</span>
+      <span class="mode-tag">Explore</span>
+    </a>
+  </div>
+
+  <!-- ================= SETUP PHASE ================= -->
+  <div id="setupPhase">
+    <div class="setup-layout">
+      <div class="board-panel glass-panel">
+        <div class="board-panel-head">
+          <h3>Deploy Your Fleet</h3>
+          <span class="turn-flag" id="setupFlag">Placing ships</span>
+        </div>
+        <div class="board-frame">
+          <div class="coord-cols" id="setupCoordCols"></div>
+          <div class="coord-rows" id="setupCoordRows"></div>
+          <div class="board-slot">
+            <div class="board-grid" id="setupBoard" aria-label="Your fleet placement board"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="console-panel glass-panel">
+        <h3>Fleet Manifest</h3>
+        <div class="fleet-picker" id="fleetPicker"></div>
+        <div class="placement-toolbar">
+          <button class="btn btn-ghost" id="rotateBtn">Rotate ↻</button>
+          <button class="btn btn-ghost" id="randomizeBtn">Randomize</button>
+          <button class="btn btn-ghost" id="resetBtn">Reset</button>
+          <button class="btn btn-primary btn-confirm" id="confirmBtn">Confirm Fleet</button>
+        </div>
+        <p class="placement-hint">Select a ship, then click the board to place it. Press <kbd>R</kbd> or click Rotate to change orientation. Click a placed ship's chip to remove it.</p>
+
+        <h3 style="margin-top: var(--sp-4);">AI Strategy</h3>
+        <p class="placement-hint" style="margin-top:0;">Choose the algorithm the AI opponent will actually use to target your fleet this match.</p>
+        <div class="segmented wrap" id="strategySelector" style="width:100%;">
+          <button data-strategy="probability" class="active">Probability</button>
+          <button data-strategy="random">Random</button>
+          <button data-strategy="bfs">BFS</button>
+          <button data-strategy="dfs">DFS</button>
+          <button data-strategy="astar">A*</button>
+          <button data-strategy="reasoning">Reasoning</button>
+          <button data-strategy="planning">Planning</button>
+          <button data-strategy="minimax">Minimax</button>
+        </div>
+        <p class="scenario-meta" id="strategyDesc">Scores every cell by how many consistent ship placements still cover it.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= BATTLE PHASE ================= -->
+  <div id="battlePhase" style="display:none;">
+    <div class="hud-bar" id="hudBar">
+      <div class="hud-item"><span class="hud-value" id="hudTurn">—</span><span class="hud-label">Turn</span></div>
+      <div class="hud-item"><span class="hud-value" id="hudShots">0</span><span class="hud-label">Shots</span></div>
+      <div class="hud-item"><span class="hud-value" id="hudHits">0</span><span class="hud-label">Hits</span></div>
+      <div class="hud-item"><span class="hud-value" id="hudAccuracy">0%</span><span class="hud-label">Accuracy</span></div>
+      <div class="hud-item"><span class="hud-value" id="hudShipsRemaining">5</span><span class="hud-label">Enemy Ships</span></div>
+      <div class="hud-item" id="hudStatusItem"><span class="hud-value" id="hudStatus">Setup</span><span class="hud-label">Game Status</span></div>
+    </div>
+
+    <div class="game-layout">
+      <div class="board-panel glass-panel">
+        <div class="board-panel-head">
+          <h3>Your Fleet</h3>
+          <span class="turn-flag" id="playerTurnFlag">Standing by</span>
+        </div>
+        <div class="board-frame">
+          <div class="coord-cols" id="playerCoordCols"></div>
+          <div class="coord-rows" id="playerCoordRows"></div>
+          <div class="board-slot">
+            <div class="board-grid" id="playerBoard" aria-label="Your fleet board"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="board-panel glass-panel">
+        <div class="board-panel-head">
+          <h3>Enemy Waters</h3>
+          <span class="turn-flag" id="aiTurnFlag">Standing by</span>
+        </div>
+        <div class="viz-toolbar" id="vizToolbar" style="display:none;">
+          <div class="segmented" id="vizSelector">
+            <button data-viz="off" class="active">Off</button>
+            <button data-viz="probability">Probability Map</button>
+            <button data-viz="knowledge">Knowledge Map</button>
+            <button data-viz="candidates">Candidates</button>
+          </div>
+        </div>
+        <div class="board-frame">
+          <div class="coord-cols" id="aiCoordCols"></div>
+          <div class="coord-rows" id="aiCoordRows"></div>
+          <div class="board-slot">
+            <div class="board-grid targetable" id="aiBoard" aria-label="Enemy board — click to fire"></div>
+          </div>
+        </div>
+        <div class="search-legend" id="vizLegend" style="display:none;"></div>
+      </div>
+
+      <div class="tactical-panel glass-panel">
+        <h3>Tactical Intelligence</h3>
+        <div class="tactical-row">
+          <span class="tactical-label">Current Turn</span>
+          <span class="tactical-value accent-cyan" id="tiTurn">—</span>
+        </div>
+        <div class="tactical-row">
+          <span class="tactical-label">AI Strategy</span>
+          <span class="tactical-value" id="tiStrategy">—</span>
+        </div>
+        <div class="tactical-row">
+          <span class="tactical-label">Last Move</span>
+          <span class="tactical-value" id="tiLastMove">—</span>
+        </div>
+        <div class="tactical-row">
+          <span class="tactical-label">Result</span>
+          <span class="tactical-value" id="tiResult">—</span>
+        </div>
+        <div class="tactical-row">
+          <span class="tactical-label">Ships Remaining</span>
+          <span class="tactical-value" id="tiShipsRemaining">5 / 5</span>
+        </div>
+        <div class="tactical-row">
+          <span class="tactical-label">AI Confidence</span>
+          <div>
+            <span class="tactical-value" id="tiConfidence">—</span>
+            <div class="confidence-bar"><div class="confidence-bar-fill" id="tiConfidenceBar" style="width:0%;"></div></div>
+          </div>
+        </div>
+        <div class="tactical-row">
+          <span class="tactical-label">Moves Taken</span>
+          <span class="tactical-value" id="tiMoves">0</span>
+        </div>
+
+        <div id="searchMetricsBlock" style="display:none;">
+          <h3 style="margin-top: var(--sp-3);">Search Metrics</h3>
+          <div class="tactical-row">
+            <span class="tactical-label">Nodes Explored</span>
+            <span class="tactical-value" id="smNodes">0</span>
+          </div>
+          <div class="tactical-row">
+            <span class="tactical-label">Search Time</span>
+            <span class="tactical-value" id="smTime">0 ms</span>
+          </div>
+          <div class="tactical-row">
+            <span class="tactical-label">States Visited</span>
+            <span class="tactical-value" id="smStates">0</span>
+          </div>
+          <div class="tactical-row">
+            <span class="tactical-label">Search Depth</span>
+            <span class="tactical-value" id="smDepth">0</span>
+          </div>
+        </div>
+
+        <div id="planningBlock" style="display:none;">
+          <h3 style="margin-top: var(--sp-3);">Tactical Plan</h3>
+          <div class="tactical-row">
+            <span class="tactical-label">Planning State</span>
+            <span class="tactical-value" id="planState">SEARCH</span>
+          </div>
+          <div class="plan-state-track" id="planStateTrack">
+            <span class="plan-node" data-state="SEARCH">Search</span>
+            <span class="plan-arrow">→</span>
+            <span class="plan-node" data-state="TARGET">Target</span>
+            <span class="plan-arrow">→</span>
+            <span class="plan-node" data-state="DESTROY">Destroy</span>
+          </div>
+          <div class="tactical-row">
+            <span class="tactical-label">Candidates</span>
+            <span class="tactical-value" id="planCandidates">—</span>
+          </div>
+        </div>
+
+        <div id="minimaxBlock" style="display:none;">
+          <h3 style="margin-top: var(--sp-3);">Minimax Engine</h3>
+          <div class="tactical-row">
+            <span class="tactical-label">Search Depth</span>
+            <span class="tactical-value" id="mmDepth">0</span>
+          </div>
+          <div class="tactical-row">
+            <span class="tactical-label">Nodes Evaluated</span>
+            <span class="tactical-value" id="mmNodes">0</span>
+          </div>
+          <div class="tactical-row">
+            <span class="tactical-label">Nodes Pruned</span>
+            <span class="tactical-value accent-cyan" id="mmPruned">0</span>
+          </div>
+          <div class="tactical-row">
+            <span class="tactical-label">Best Action</span>
+            <span class="tactical-value" id="mmBestAction">—</span>
+          </div>
+          <div class="tactical-row">
+            <span class="tactical-label">Pruning</span>
+            <span class="tactical-value" id="mmMode">Alpha-Beta</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="reasoning-panel glass-panel" id="reasoningPanel" style="display:none;">
+      <h3>AI Reasoning</h3>
+      <div class="reasoning-columns">
+        <div class="reasoning-col col-know">
+          <span class="reasoning-col-title">What I Know</span>
+          <ul id="reasonKnow"></ul>
+        </div>
+        <div class="reasoning-col col-infer">
+          <span class="reasoning-col-title">What I Infer</span>
+          <ul id="reasonInfer"></ul>
+        </div>
+        <div class="reasoning-col col-will">
+          <span class="reasoning-col-title">What I Will Do</span>
+          <ul id="reasonWillDo"></ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="game-console">
+      <div class="console-panel glass-panel">
+        <h3>Enemy Fleet Status</h3>
+        <ul class="fleet-list" id="aiFleetList"></ul>
+      </div>
+      <div class="console-panel glass-panel">
+        <h3>Battle Log</h3>
+        <ul class="battle-log" id="battleLog"></ul>
+      </div>
+    </div>
+
+    <div class="text-center" style="margin-top: var(--sp-5);">
+      <button class="btn btn-ghost" id="newGameBtn">New Game</button>
+    </div>
+  </div>
+</section>
+
+<div class="victory-overlay" id="victoryOverlay">
+  <div class="victory-card glass-panel" id="victoryCard">
+    <h2 class="victory-title" id="victoryTitle">VICTORY</h2>
+    <p id="victorySubtitle">Enemy fleet destroyed.</p>
+    <div class="victory-stats">
+      <div class="hero-stat"><span class="stat-value" id="victoryShots">0</span><span class="stat-label">Shots Fired</span></div>
+      <div class="hero-stat"><span class="stat-value" id="victoryAccuracy">0%</span><span class="stat-label">Accuracy</span></div>
+    </div>
+    <div class="victory-actions">
+      <button class="btn btn-primary" id="victoryReplayBtn">Play Again</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/game.js') }}"></script>
+{% endblock %}

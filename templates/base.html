@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}AI Battleship{% endblock %}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Barlow:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/tokens.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/nav.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
+{% block extra_css %}{% endblock %}
+</head>
+<body>
+<div class="tactical-field" aria-hidden="true"></div>
+
+<nav class="navbar">
+  <div class="navbar-inner">
+    <a href="{{ url_for('landing') }}" class="navbar-brand">
+      <span class="brand-mark">AB</span>
+      AI BATTLESHIP
+    </a>
+    <button class="navbar-toggle" id="navToggle" aria-label="Toggle navigation" aria-expanded="false">☰</button>
+    <ul class="navbar-links" id="navLinks">
+      <li><a href="{{ url_for('landing') }}" class="{{ 'active' if active_page == 'home' else '' }}">Home</a></li>
+      <li><a href="{{ url_for('play') }}" class="{{ 'active' if active_page == 'play' else '' }}">Play</a></li>
+      <li><a href="{{ url_for('ai_lab') }}" class="{{ 'active' if active_page == 'ai_lab' else '' }}">AI Lab</a></li>
+      <li><a href="{{ url_for('compare') }}" class="{{ 'active' if active_page == 'compare' else '' }}">Compare</a></li>
+      <li><a href="{{ url_for('how_it_works') }}" class="{{ 'active' if active_page == 'how' else '' }}">How It Works</a></li>
+    </ul>
+    <div class="navbar-right">
+      <button class="mute-btn" id="muteBtn" aria-label="Toggle sound" title="Toggle sound">
+        <span id="muteIcon">♪</span>
+      </button>
+      <span class="status-pill"><span class="status-dot"></span>AI System Online</span>
+    </div>
+  </div>
+</nav>
+
+<main>
+{% block content %}{% endblock %}
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <div class="footer-brand">
+      <span class="footer-brand-name">AI Battleship</span>
+      <span class="footer-brand-tag">AI-powered strategy simulation</span>
+    </div>
+    <span class="footer-meta">Academic AI Project</span>
+  </div>
+</footer>
+
+<script src="{{ url_for('static', filename='js/sound.js') }}"></script>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,125 @@
+/* nav.css — fixed glass command bar */
+
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: rgba(20, 23, 16, 0.72);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border-bottom: 1px solid rgba(122, 128, 97, 0.14);
+}
+
+.navbar-inner {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0.9rem var(--sp-4);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-4);
+}
+
+.navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.05rem;
+  letter-spacing: 0.06em;
+  color: var(--ink-100);
+}
+
+.navbar-brand .brand-mark {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, var(--cyan), var(--blue));
+  color: var(--void);
+  font-size: 0.9rem;
+  box-shadow: 0 0 18px rgba(198, 185, 138, 0.35);
+}
+
+.navbar-links {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-5);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.navbar-links a {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.95rem;
+  letter-spacing: 0.03em;
+  color: var(--ink-400);
+  position: relative;
+  padding: 0.3rem 0;
+}
+
+.navbar-links a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -4px;
+  width: 0;
+  height: 2px;
+  background: var(--cyan);
+  transition: width var(--dur-fast) var(--ease-out);
+}
+
+.navbar-links a:hover,
+.navbar-links a.active {
+  color: var(--ink-100);
+}
+.navbar-links a:hover::after,
+.navbar-links a.active::after {
+  width: 100%;
+}
+
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+}
+
+.navbar-toggle {
+  display: none;
+  background: none;
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius-s);
+  color: var(--ink-100);
+  padding: 0.4rem 0.6rem;
+  cursor: pointer;
+}
+
+@media (max-width: 860px) {
+  .navbar-links {
+    position: fixed;
+    top: 64px;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--sp-3);
+    background: rgba(20, 23, 16, 0.97);
+    padding: var(--sp-4);
+    border-bottom: 1px solid rgba(122, 128, 97, 0.14);
+    transform: translateY(-130%);
+    opacity: 0;
+    transition: transform var(--dur-mid) var(--ease-out), opacity var(--dur-mid) var(--ease-out);
+  }
+  .navbar-links.open {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  .navbar-toggle { display: inline-flex; }
+  .navbar-right .status-pill { display: none; }
+}

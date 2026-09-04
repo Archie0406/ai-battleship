@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+{% block title %}AI Lab — AI Battleship{% endblock %}
+{% set active_page = 'ai_lab' %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/game.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/lab.css') }}">
+{% endblock %}
+
+{% block content %}
+<section class="page-header container">
+  <span class="eyebrow">// Reasoning Console</span>
+  <h1>AI LAB</h1>
+  <p>See how the intelligence behind the battle works.</p>
+</section>
+
+<section class="container">
+  <div class="mode-selector">
+    <a href="{{ url_for('play') }}" class="mode-card">
+      <span class="mode-name">Human vs AI</span>
+      <span class="mode-desc">Place your fleet, then trade shots with a live reasoning AI.</span>
+      <span class="mode-tag">Play</span>
+    </a>
+    <a href="{{ url_for('play_ai_vs_ai') }}" class="mode-card">
+      <span class="mode-name">AI vs AI</span>
+      <span class="mode-desc">Watch two configurable AI Commanders fight it out.</span>
+      <span class="mode-tag">Spectate</span>
+    </a>
+    <div class="mode-card active">
+      <span class="mode-name">Algorithm Lab</span>
+      <span class="mode-desc">Run every algorithm live and see exactly how it thinks.</span>
+      <span class="mode-tag">● Exploring now</span>
+    </div>
+  </div>
+</section>
+
+<section class="container section" style="padding-top:0;">
+  <div class="notice glass-panel">
+    <span class="notice-icon">▣</span>
+    <div>
+      <strong style="color: var(--ink-100); font-family: var(--font-display); font-size: 0.9rem; letter-spacing: 0.04em;">Ten real, executing algorithms</strong>
+      <p style="margin: 0.35rem 0 0;">Every card below runs the actual module it names — <span class="mono">ai/csp.py</span>, <span class="mono">ai/backtracking.py</span>, <span class="mono">ai/search.py</span>, <span class="mono">ai/probability.py</span>, <span class="mono">ai/reasoning.py</span>, <span class="mono">ai/planning.py</span>, <span class="mono">ai/minimax.py</span> — against a real scenario board. Nothing here is a mockup or a fabricated number.</p>
+    </div>
+  </div>
+</section>
+
+<section class="container section" style="padding-top:0;">
+  <div class="section-header">
+    <span class="eyebrow">// Choose an Algorithm</span>
+    <h2>The AI behind every decision</h2>
+  </div>
+  <div class="card-grid" id="algoCardGrid"></div>
+</section>
+
+<section class="container section detail-view" id="detailView" style="padding-top:0;">
+  <div class="section-header">
+    <span class="eyebrow">// Algorithm Detail View</span>
+    <h2>Live Demonstration</h2>
+  </div>
+
+  <div class="glass-panel" style="padding: var(--sp-4);">
+    <div class="detail-header">
+      <div style="display:flex; gap: var(--sp-3); align-items:flex-start;">
+        <div class="detail-icon" id="detailIcon">◎</div>
+        <div class="detail-title-block">
+          <span class="algo-category" id="detailCategory">Category</span>
+          <h2 id="detailName">Select an algorithm</h2>
+          <p id="detailShortDesc" style="margin:0;">Click "View Demo" on any card above to begin.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="lab-controls">
+      <div class="control-group" id="speedControlGroup" style="display:none;">
+        <span class="control-label">Animation Speed</span>
+        <div class="segmented" id="speedSelector">
+          <button data-speed="slow">Slow</button>
+          <button data-speed="normal" class="active">Normal</button>
+          <button data-speed="fast">Fast</button>
+        </div>
+      </div>
+      <div class="control-group">
+        <span class="control-label">Scenario</span>
+        <button class="btn btn-ghost" id="newScenarioBtn">New Scenario</button>
+      </div>
+      <div class="control-group">
+        <span class="control-label">&nbsp;</span>
+        <button class="btn btn-primary" id="runDemoBtn" disabled>Run Demo</button>
+      </div>
+      <div class="control-group">
+        <span class="control-label">&nbsp;</span>
+        <label class="live-toggle" id="liveToggleWrap">
+          <input type="checkbox" id="liveToggle">
+          Use live Human vs AI grid
+        </label>
+      </div>
+    </div>
+
+    <div class="detail-tabs">
+      <button class="detail-tab active" data-pane="whatItIs">What It Is</button>
+      <button class="detail-tab" data-pane="howItWorks">How It Works</button>
+      <button class="detail-tab" data-pane="usedInBattleship">Used In Battleship</button>
+      <button class="detail-tab active" data-pane="visualization">Live Visualization</button>
+      <button class="detail-tab active" data-pane="metrics">Metrics</button>
+    </div>
+
+    <div class="detail-pane active" data-pane="whatItIs">
+      <p class="prose" id="paneWhatItIs"></p>
+    </div>
+    <div class="detail-pane" data-pane="howItWorks">
+      <p class="prose" id="paneHowItWorks"></p>
+    </div>
+    <div class="detail-pane" data-pane="usedInBattleship">
+      <p class="prose" id="paneUsedInBattleship"></p>
+    </div>
+
+    <div class="detail-pane active" data-pane="visualization">
+      <div class="lab-layout">
+        <div class="board-panel glass-panel">
+          <div class="board-panel-head">
+            <h3>Scenario Board</h3>
+            <span class="turn-flag" id="labStatusFlag">Idle</span>
+          </div>
+          <div class="board-frame">
+            <div class="coord-cols" id="labCoordCols"></div>
+            <div class="coord-rows" id="labCoordRows"></div>
+            <div class="board-slot">
+              <div class="board-grid" id="labBoard" aria-label="Algorithm scenario board"></div>
+            </div>
+          </div>
+          <div class="search-legend" id="labLegend"></div>
+          <p class="scenario-meta" id="labScenarioMeta">No scenario loaded yet.</p>
+        </div>
+
+        <div class="console-panel glass-panel" id="vizSidePanel">
+          <h3 id="vizSidePanelTitle">Details</h3>
+          <div id="vizSideContent"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-pane active" data-pane="metrics">
+      <div class="metrics-grid" id="metricsGrid"></div>
+      <div class="formula-strip" id="formulaStrip" style="display:none;">
+        <span class="formula-term"><span class="fn">g(n)</span> = <span class="val" id="fnG">0</span></span>
+        <span class="formula-term"><span class="fn">h(n)</span> = <span class="val" id="fnH">0</span></span>
+        <span class="formula-term"><span class="fn">f(n)</span> = <span class="val" id="fnF">0</span></span>
+      </div>
+    </div>
+
+    <div class="why-panel">
+      <h4>Why This Algorithm?</h4>
+      <p id="paneWhy"></p>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/algo_content.js') }}"></script>
+<script src="{{ url_for('static', filename='js/algorithm_lab.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+{% block title %}AI Battleship — Outthink. Outsmart. Outlast.{% endblock %}
+{% set active_page = 'home' %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/landing.css') }}">
+{% endblock %}
+
+{% block content %}
+<section class="hero container">
+  <div class="hero-copy">
+    <span class="eyebrow">// Tactical AI Engine v1.0</span>
+    <h1 class="hero-title">AI BATTLESHIP</h1>
+    <p class="hero-tagline">OUTTHINK. OUTSMART. OUTLAST.</p>
+    <p class="hero-desc">
+      An intelligent naval strategy game powered by search, reasoning,
+      constraint satisfaction and decision-making algorithms.
+    </p>
+    <div class="hero-actions">
+      <a href="{{ url_for('play') }}" class="btn btn-primary">Play Against AI</a>
+      <a href="{{ url_for('ai_lab') }}" class="btn btn-ghost">Explore AI Lab</a>
+    </div>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <span class="stat-value">10×10</span>
+        <span class="stat-label">Tactical Grid</span>
+      </div>
+      <div class="hero-stat">
+        <span class="stat-value">5</span>
+        <span class="stat-label">Vessel Classes</span>
+      </div>
+      <div class="hero-stat">
+        <span class="stat-value">9</span>
+        <span class="stat-label">AI Subsystems</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-visual" aria-hidden="true">
+    <div class="hud-corner tl"></div>
+    <div class="hud-corner tr"></div>
+    <div class="hud-corner bl"></div>
+    <div class="hud-corner br"></div>
+
+    <div class="hud-coords-top"><span>A</span><span>C</span><span>E</span><span>G</span><span>I</span></div>
+    <div class="hud-coords-left"><span>1</span><span>3</span><span>5</span><span>7</span><span>9</span></div>
+
+    <div class="scan-line"></div>
+
+    <div class="radar-wrap">
+      <div class="radar-disc">
+        <div class="radar-ring r1"></div>
+        <div class="radar-ring r2"></div>
+        <div class="radar-ring r3"></div>
+        <div class="radar-ring r4"></div>
+        <div class="radar-crosshair"></div>
+        <div class="radar-sweep"></div>
+        <div class="radar-blip b1"></div>
+        <div class="radar-blip b2"></div>
+        <div class="radar-blip b3"></div>
+      </div>
+    </div>
+
+    <svg class="hud-ship" viewBox="0 0 200 70" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M8 44 L28 44 L40 30 L150 30 L172 40 L188 44 L172 50 L20 50 Z" fill="currentColor" opacity="0.55"/>
+      <rect x="70" y="16" width="10" height="16" fill="currentColor" opacity="0.55"/>
+      <rect x="95" y="10" width="8" height="22" fill="currentColor" opacity="0.55"/>
+      <rect x="120" y="18" width="9" height="14" fill="currentColor" opacity="0.55"/>
+      <line x1="99" y1="10" x2="99" y2="2" stroke="currentColor" stroke-width="1.5" opacity="0.55"/>
+    </svg>
+
+    <div class="hud-target t1">
+      <span class="crosshair-dot"></span>
+      <span class="target-label">C4</span>
+    </div>
+    <div class="hud-target t2">
+      <span class="crosshair-dot"></span>
+      <span class="target-label">G7</span>
+    </div>
+
+    <div class="hud-readout">
+      <span class="readout-line"><span class="rdot"></span><span id="readoutStatus">SCANNING GRID SECTOR 4-7</span><span class="cursor-blink"></span></span>
+    </div>
+  </div>
+</section>
+
+<section class="section container reveal">
+  <div class="section-header center">
+    <span class="eyebrow">// Core Systems</span>
+    <h2>THE AI BEHIND THE BATTLE</h2>
+    <p>Eight reasoning techniques work together to decide, hunt, and adapt in real time.</p>
+  </div>
+  <div class="algo-grid reveal-stagger">
+    <div class="algo-card glass-panel">
+      <div class="algo-icon">▦</div>
+      <h3>CSP</h3>
+      <p>Models fleet placement as a constraint satisfaction problem with no overlaps or contradictions.</p>
+    </div>
+    <div class="algo-card glass-panel">
+      <div class="algo-icon">⌥</div>
+      <h3>Backtracking</h3>
+      <p>Searches placement possibilities and retreats the instant a choice breaks a constraint.</p>
+    </div>
+    <div class="algo-card glass-panel">
+      <div class="algo-icon">▤</div>
+      <h3>BFS</h3>
+      <p>Explores the grid level by level to guarantee the shortest path to a target.</p>
+    </div>
+    <div class="algo-card glass-panel">
+      <div class="algo-icon">▥</div>
+      <h3>DFS</h3>
+      <p>Dives deep along one line of reasoning before backing out to try another.</p>
+    </div>
+    <div class="algo-card glass-panel">
+      <div class="algo-icon">✦</div>
+      <h3>A*</h3>
+      <p>Combines cost and heuristics to plan the most efficient route to a likely hit.</p>
+    </div>
+    <div class="algo-card glass-panel">
+      <div class="algo-icon">◎</div>
+      <h3>Probability</h3>
+      <p>Scores every unfired cell by how many consistent ship placements still cover it.</p>
+    </div>
+    <div class="algo-card glass-panel">
+      <div class="algo-icon">♟</div>
+      <h3>Minimax</h3>
+      <p>Weighs the AI's next move against your best possible response before committing.</p>
+    </div>
+    <div class="algo-card glass-panel">
+      <div class="algo-icon">α β</div>
+      <h3>Alpha-Beta</h3>
+      <p>Prunes hopeless branches out of minimax so the AI decides faster without deciding worse.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section container reveal">
+  <div class="section-header center">
+    <span class="eyebrow">// Capabilities</span>
+    <h2>Built for real strategic play</h2>
+  </div>
+  <div class="feature-grid reveal-stagger">
+    <div class="feature-card glass-panel" style="--accent: var(--cyan);">
+      <span class="feature-index">01</span>
+      <h3>Smart Ship Placement</h3>
+      <p>Fleets are laid out under real adjacency and boundary constraints, never overlapping or touching.</p>
+    </div>
+    <div class="feature-card glass-panel" style="--accent: var(--blue);">
+      <span class="feature-index">02</span>
+      <h3>Intelligent Targeting</h3>
+      <p>The AI narrows in on wounded ships instead of guessing randomly across the board.</p>
+    </div>
+    <div class="feature-card glass-panel" style="--accent: var(--online);">
+      <span class="feature-index">03</span>
+      <h3>Real-Time Reasoning</h3>
+      <p>Every shot updates a live knowledge state that immediately reshapes the AI's next decision.</p>
+    </div>
+    <div class="feature-card glass-panel" style="--accent: var(--hit);">
+      <span class="feature-index">04</span>
+      <h3>Strategic Decision Making</h3>
+      <p>Multiple algorithms are architected to weigh in on a single move, not just one fixed rule.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section container reveal">
+  <div class="stats-strip">
+    <div class="stat-block">
+      <span class="stat-number">9</span>
+      <span class="stat-caption">AI Techniques</span>
+    </div>
+    <div class="stat-block">
+      <span class="stat-number">3</span>
+      <span class="stat-caption">Search Strategies</span>
+    </div>
+    <div class="stat-block">
+      <span class="stat-number">LIVE</span>
+      <span class="stat-caption">Real-Time Decisions</span>
+    </div>
+    <div class="stat-block">
+      <span class="stat-number">∞</span>
+      <span class="stat-caption">Interactive Visualizations</span>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/landing.js') }}"></script>
+{% endblock %}

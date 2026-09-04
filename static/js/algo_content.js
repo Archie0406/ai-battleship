@@ -1,0 +1,111 @@
+// algo_content.js — shared algorithm explanatory content used by both the
+// AI Lab (algorithm_lab.js) and Demo Mode (demo_mode.js), so the two
+// pages never drift out of sync with different text for the same
+// algorithm. Every description here is accurate to this exact
+// implementation, not generic textbook copy.
+(function () {
+  window.ALGO_CONTENT = [
+    {
+      id: "csp", demoId: "csp", icon: "▦", category: "Constraint Satisfaction",
+      name: "CSP (Constraint Satisfaction)",
+      shortDesc: "Models ship placement as variables, domains, and constraints that must all hold at once.",
+      whatItIs: "A Constraint Satisfaction Problem is defined by three things: a set of variables, a domain of possible values for each variable, and a set of constraints that restrict which combinations of values are allowed. Solving a CSP means finding an assignment of a value to every variable that satisfies every constraint simultaneously.",
+      howItWorks: "Here, each remaining (unsunk) enemy ship is a variable. Its domain is every legal (row, col, orientation) placement of that ship's length that stays in bounds and doesn't cover a known miss or sunk cell. Two constraints apply: no two ships' placements may overlap or even touch (Battleship's no-touch rule), and every currently active hit cell must be covered by some ship in the final assignment. Before search even starts, AC-3 arc-consistency removes any placement from one ship's domain that has no compatible placement left in another ship's domain — this can shrink the search space dramatically before a single full assignment is tried.",
+      usedInBattleship: "The AI samples several complete, jointly-consistent fleet layouts this way, then fires at whichever unknown cell the most sampled layouts agree a ship occupies. Because every sample respects ALL ships' constraints at once — not just one ship in isolation — this produces a genuinely different (and often sharper) probability picture than scoring each ship independently.",
+      why: "CSP is the right tool whenever a problem is really about satisfying a web of hard constraints jointly, not optimizing one thing. Battleship's fleet placement is exactly that: five ships, tight adjacency rules, and every past shot narrowing the space further — a textbook CSP.",
+      vizType: "csp",
+    },
+    {
+      id: "backtracking", demoId: "backtracking", icon: "⌥", category: "Search Algorithm",
+      name: "Backtracking Search",
+      shortDesc: "Explores the CSP's domains variable by variable, undoing a choice the instant it breaks a constraint.",
+      whatItIs: "Backtracking is the general algorithm for solving a CSP: assign a value to one variable at a time, check that the partial assignment still satisfies every constraint, and if it doesn't, undo (\"backtrack\") the most recent assignment and try the next candidate value instead.",
+      howItWorks: "This implementation adds two classic speed-ups on top of plain backtracking. Minimum Remaining Values (MRV) picks the ship with the fewest legal placements left to assign next, since it's most likely to fail fast if the board is inconsistent. Least Constraining Value (LCV) then orders that ship's candidate placements by how few options they eliminate for the OTHER ships, trying the least disruptive one first. After every tentative assignment, forward checking removes now-incompatible placements from every other unassigned ship's domain immediately — if any domain empties out, that branch is abandoned right away instead of being explored further.",
+      usedInBattleship: "This is literally the algorithm that solves the CSP described in the CSP card — every node it expands and every backtrack it takes is counted and logged, and the same board search produces both cards' metrics from one execution.",
+      why: "Backtracking is what makes CSP formulations actually tractable. Without MRV/LCV/forward-checking it degrades toward brute force; with them, most inconsistent branches are abandoned within one or two assignments instead of being fully explored.",
+      vizType: "csp",
+    },
+    {
+      id: "bfs", demoId: "bfs", icon: "▤", category: "Uninformed Search",
+      name: "Breadth-First Search",
+      shortDesc: "Explores the grid level by level, guaranteeing the closest untried cell is found first.",
+      whatItIs: "Breadth-First Search explores a graph outward in rings: it visits every neighbor of the start node before visiting any neighbor-of-a-neighbor, using a First-In-First-Out (FIFO) queue to always expand the oldest discovered node next.",
+      howItWorks: "The board is treated as a grid graph, where each cell connects to its four orthogonal neighbors. Search starts from every currently active hit cell (\"hunt mode\") — or the board center if there are no hits yet (\"sweep mode\") — and expands outward one ring at a time until it reaches an UNKNOWN cell, which becomes the target.",
+      usedInBattleship: "Because BFS explores in expanding rings, it's guaranteed to find the closest untried cell to a hit — useful for a fast, simple, always-correct \"investigate nearby\" behavior once the AI has a lead.",
+      why: "BFS is the right choice whenever you need the provably shortest path in an unweighted grid and don't need to reason about direction or cost — simple, predictable, and always optimal for distance.",
+      vizType: "search",
+    },
+    {
+      id: "dfs", demoId: "dfs", icon: "▥", category: "Uninformed Search",
+      name: "Depth-First Search",
+      shortDesc: "Dives one direction as far as possible before backtracking, using an explicit stack.",
+      whatItIs: "Depth-First Search explores as far down one path as it can before backing up, using a Last-In-First-Out (LIFO) stack rather than BFS's queue.",
+      howItWorks: "Starting from the same hunt/sweep points as BFS, DFS repeatedly pushes a neighbor cell onto a stack and immediately explores it, only backtracking to an earlier cell once the current path is exhausted. This means it can reach a far untried cell before a near one, unlike BFS.",
+      usedInBattleship: "DFS demonstrates the direct contrast with BFS on the same board: same start points, same grid, same goal test, often a very different exploration order and nodes-explored count.",
+      why: "DFS is preferred when memory is tight (it only needs to remember the current path, not every frontier node) or when any valid path will do rather than the shortest one. In Battleship it's mainly useful to contrast against BFS's guarantees.",
+      vizType: "search",
+    },
+    {
+      id: "astar", demoId: "astar", icon: "✦", category: "Informed Search",
+      name: "A* Search",
+      shortDesc: "Orders candidates by f(n) = g(n) + h(n), balancing real cost against a distance heuristic.",
+      whatItIs: "A* is an informed search algorithm that always expands the node with the lowest f(n) = g(n) + h(n): the exact cost already paid to reach it, plus an estimate of the remaining cost to the goal. If that estimate never overstates the true remaining cost (an \"admissible\" heuristic), A* is guaranteed to find an optimal path while typically exploring far fewer nodes than BFS.",
+      howItWorks: "Here, g(n) is the real number of grid steps taken so far from the nearest lead (or the board center). h(n) is the Manhattan distance from the candidate cell to the nearest active hit — never an overestimate, since you can never reach a cell in fewer than that many orthogonal steps. A priority queue always pops the cell with the smallest f(n) next.",
+      usedInBattleship: "A* reaches the same guaranteed-shortest target as BFS but typically evaluates fewer nodes, since the heuristic actively steers the search toward promising cells instead of exploring blindly outward in every direction.",
+      why: "A* is the standard choice whenever a good, cheap-to-compute heuristic exists — exactly Battleship's Manhattan distance to a known hit. It gets BFS's optimality guarantee with better average-case efficiency.",
+      vizType: "search",
+    },
+    {
+      id: "probability", demoId: "probability", icon: "◎", category: "Reasoning Under Uncertainty",
+      name: "Probability Density",
+      shortDesc: "Scores every cell by how many still-consistent ship placements cover it.",
+      whatItIs: "This is a heuristic form of reasoning under uncertainty: rather than solving for one definite answer, it estimates a likelihood for every possibility by counting how many ways each outcome could still be true.",
+      howItWorks: "For every remaining ship length, the algorithm checks every legal placement of that length on the board and tallies how many placements cover each still-unknown cell — cells covered by more surviving placements score higher. Placements that would explain an existing active hit get extra weight, so the density naturally concentrates around a wounded ship instead of staying spread out.",
+      usedInBattleship: "This is the AI's default targeting strategy: fast to compute every turn, and it naturally re-weights every cell the instant new information (a hit or a miss) arrives, with no explicit rules needed.",
+      why: "Probability density is the right tool when you need a fast, good-enough answer every single turn rather than a provably correct one — a lightweight approximation of what the CSP sampling approach computes more rigorously (and more expensively).",
+      vizType: "probability",
+    },
+    {
+      id: "reasoning", demoId: "reasoning", icon: "§", category: "Knowledge Representation",
+      name: "Forward Chaining",
+      shortDesc: "Fires inference rules against known hits/misses/sunk ships to shrink the candidate domain.",
+      whatItIs: "Forward chaining is a knowledge representation technique: a knowledge base of known facts, plus a set of if-then rules, and an inference engine that repeatedly fires any rule whose condition is now true, deriving new facts until nothing new can be derived.",
+      howItWorks: "The knowledge base tracks every known hit, miss, sunk cell, and destroyed ship. Four rules fire after every new fact: a MISS eliminates every candidate ship placement that contains it; an active HIT raises the priority of its orthogonal neighbors; a ship confirmed DESTROYED clears its own remaining candidates and marks its whole footprint (including the no-touch border) off-limits for every other ship; and any placement that ever contradicts a known fact is removed, on every pass, so the domain always matches reality exactly.",
+      usedInBattleship: "The result is both a probability grid AND a plain-English trace — \"Confirmed HIT at B5\", \"Several placements remain possible\", \"C5 has the highest probability\" — generated directly from the same facts and rules driving the targeting decision, not a separate summary of it.",
+      why: "Forward chaining shines when you need an EXPLAINABLE decision, not just a fast one — every conclusion traces back to a specific rule firing on a specific fact, which is exactly what a knowledge-based AI is supposed to offer over a black-box heuristic.",
+      vizType: "reasoning",
+    },
+    {
+      id: "planning", demoId: "planning", icon: "▶", category: "State-Based Planning",
+      name: "Tactical Planning",
+      shortDesc: "Classifies its own tactical state — SEARCH, TARGET, DESTROY — and acts accordingly.",
+      whatItIs: "State-based planning separates strategy from tactics: rather than one monolithic rule for every situation, the AI first classifies which of a small number of tactical states it's in, then applies whichever behavior is appropriate for that state.",
+      howItWorks: "The state is recomputed from scratch every turn, never stored as a flag that could drift out of sync. SEARCH: no active hit anywhere on the board — broad-scan for a first hit. TARGET: exactly one active hit, orientation unknown — investigate its orthogonal neighbors to find a second hit. DESTROY: two or more colinear active hits (Battleship's no-touch rule guarantees a second adjacent hit belongs to the same ship) — keep firing along the established line. The instant every cell of that ship is marked SUNK, the next check naturally finds zero active hits again, so DESTROY returns to SEARCH with no special-casing needed.",
+      usedInBattleship: "This mirrors exactly how a human player instinctively plays: hunt broadly, zero in the moment you land a hit, then finish the ship off once its orientation is known.",
+      why: "Planning is useful whenever a single flat strategy would have to handle very different situations awkwardly. Separating \"what state am I in\" from \"what do I do in that state\" keeps each part simple and independently verifiable.",
+      vizType: "planning",
+    },
+    {
+      id: "minimax", demoId: "minimax", icon: "♟", category: "Adversarial Search",
+      name: "Minimax",
+      shortDesc: "Searches a MAX/MIN game tree over the hidden fleet, playing the worst logically-consistent case.",
+      whatItIs: "Minimax is the classic algorithm for two-player, zero-sum adversarial games: MAX picks the move that maximizes its own outcome, MIN picks the move that minimizes it (worst for MAX), and the algorithm searches ahead assuming both players play optimally.",
+      howItWorks: "Battleship hides the fleet layout, so this is honestly NOT treated as a perfect-information game. MAX is the AI's shot — legal actions are the highest-scoring candidate cells by probability density, kept to a tractable branching factor. MIN is the hidden fleet, played adversarially: for whichever cell MAX just fired at, MIN picks whichever outcome (HIT or MISS) is worse for MAX, but ONLY among outcomes still logically consistent with everything observed — a cell already proven impossible to contain a ship can only offer MISS, never HIT. The tree is depth-limited, with a heuristic evaluation (net hits minus misses along the simulated line) standing in for a full search to game-end.",
+      usedInBattleship: "This produces genuinely adversarial, worst-case-aware move selection instead of a purely reactive heuristic — the same node counts, depth, and best action shown here are exactly what decides the AI's real shot when Minimax is the selected strategy.",
+      why: "Minimax is the right model whenever an opponent is actively working against you, not just an obstacle to route around. Even with hidden information, reasoning about a worst logically-consistent case gives more robust decisions than pure optimism.",
+      vizType: "minimax",
+    },
+    {
+      id: "alphabeta", demoId: "alphabeta", icon: "αβ", category: "Adversarial Search + Pruning",
+      name: "Alpha-Beta Pruning",
+      shortDesc: "Prunes hopeless branches out of Minimax, reaching the identical decision faster.",
+      whatItIs: "Alpha-Beta pruning is an optimization of Minimax: it maintains two bounds, alpha (the best value MAX can already guarantee) and beta (the best value MIN can already guarantee), and stops exploring a branch the moment it proves that branch can't change the final decision.",
+      howItWorks: "The search runs over the EXACT same MAX/MIN tree as plain Minimax — same legal actions, same MIN outcomes, same depth limit — with one difference: once a node's value falls outside the current [alpha, beta] window, the rest of its children are skipped entirely, since no value they could return would ever be chosen. Because the tree, evaluation function, and depth are identical to plain Minimax, alpha-beta is mathematically guaranteed to reach the exact same decision — it can only ever prune branches that couldn't have mattered.",
+      usedInBattleship: "The Comparison page's live Minimax vs Minimax+Alpha-Beta benchmark runs both variants on the identical root state and shows the real evaluated/pruned node counts side by side — pruning typically removes a meaningful fraction of the tree, growing with search depth.",
+      why: "Alpha-beta is essentially free — same guaranteed decision, strictly less work — so in practice there's rarely a reason to run plain Minimax at all once alpha-beta is implemented correctly, other than to demonstrate the difference.",
+      vizType: "minimax",
+    },
+  ];
+
+  window.ALGO_CONTENT_BY_ID = Object.fromEntries(window.ALGO_CONTENT.map((a) => [a.id, a]));
+})();

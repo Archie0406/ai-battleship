@@ -1,0 +1,372 @@
+/* landing.css — hero HUD composition, AI tech cards, features, stats */
+
+/* ------------------------------------------------------------------ */
+/* Hero visual: tactical HUD panel (ocean grid + radar + ship + scans) */
+/* ------------------------------------------------------------------ */
+.hero-visual {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  max-width: 520px;
+  margin: 0 auto;
+  border-radius: var(--radius-l);
+  border: 1px solid var(--panel-border);
+  background:
+    linear-gradient(rgba(198, 185, 138, 0.05), rgba(198, 185, 138, 0.05)),
+    radial-gradient(ellipse at 30% 20%, rgba(198, 185, 138, 0.1), transparent 60%),
+    var(--navy);
+  overflow: hidden;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(232, 225, 200, 0.02);
+}
+
+/* ocean/grid backdrop inside the HUD */
+.hero-visual::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(198, 185, 138, 0.09) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(198, 185, 138, 0.09) 1px, transparent 1px);
+  background-size: 34px 34px;
+  background-position: center;
+}
+
+/* vertical scan line sweeping down the panel */
+.hero-visual .scan-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+  box-shadow: 0 0 16px 2px var(--cyan-soft);
+  opacity: 0.75;
+  animation: scan-sweep 5s linear infinite;
+}
+@keyframes scan-sweep {
+  0% { top: -2%; opacity: 0; }
+  8% { opacity: 0.75; }
+  92% { opacity: 0.75; }
+  100% { top: 102%; opacity: 0; }
+}
+
+/* corner coordinate frame */
+.hud-corner {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  border: 1.5px solid var(--cyan-soft);
+}
+.hud-corner.tl { top: 12px; left: 12px; border-right: none; border-bottom: none; }
+.hud-corner.tr { top: 12px; right: 12px; border-left: none; border-bottom: none; }
+.hud-corner.bl { bottom: 12px; left: 12px; border-right: none; border-top: none; }
+.hud-corner.br { bottom: 12px; right: 12px; border-left: none; border-top: none; }
+
+/* coordinate ticks along top/left edges */
+.hud-coords-top, .hud-coords-left {
+  position: absolute;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  color: var(--ink-700);
+  letter-spacing: 0.05em;
+}
+.hud-coords-top {
+  top: 8px; left: 40px; right: 40px;
+  display: flex;
+  justify-content: space-between;
+}
+.hud-coords-left {
+  left: 8px; top: 40px; bottom: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* embedded radar disc, smaller, centered within the HUD */
+.hero-visual .radar-wrap {
+  position: absolute;
+  inset: 14%;
+  max-width: none;
+  margin: 0;
+}
+
+/* ship silhouette drifting across the panel */
+.hud-ship {
+  position: absolute;
+  width: 46%;
+  bottom: 14%;
+  right: 8%;
+  color: rgba(232, 225, 200, 0.5);
+  filter: drop-shadow(0 0 10px rgba(198, 185, 138, 0.25));
+  animation: ship-drift 7s ease-in-out infinite;
+  transform-origin: center;
+}
+@keyframes ship-drift {
+  0%, 100% { transform: translateY(0) rotate(-1.5deg); }
+  50% { transform: translateY(-6px) rotate(1.5deg); }
+}
+
+/* target reticles pinned at fixed points */
+.hud-target {
+  position: absolute;
+  width: 34px;
+  height: 34px;
+}
+.hud-target::before, .hud-target::after {
+  content: "";
+  position: absolute;
+  border: 1.5px solid var(--hit);
+  border-radius: 50%;
+}
+.hud-target::before { inset: 0; opacity: 0.9; }
+.hud-target::after {
+  inset: -6px;
+  opacity: 0;
+  animation: target-ping 2.4s ease-out infinite;
+}
+.hud-target .crosshair-dot {
+  position: absolute;
+  inset: 45% 45%;
+  background: var(--hit);
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--hit);
+}
+@keyframes target-ping {
+  0% { opacity: 0.55; transform: scale(0.7); }
+  80% { opacity: 0; transform: scale(1.4); }
+  100% { opacity: 0; transform: scale(1.4); }
+}
+.hud-target.t1 { top: 22%; left: 18%; }
+.hud-target.t2 { top: 62%; left: 68%; }
+.hud-target .target-label {
+  position: absolute;
+  top: 110%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  color: var(--hit);
+  white-space: nowrap;
+}
+
+/* AI status readout ticker, bottom-left of the HUD */
+.hud-readout {
+  position: absolute;
+  left: 16px;
+  bottom: 16px;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  line-height: 1.6;
+  color: var(--cyan-dim);
+  max-width: 62%;
+}
+.hud-readout .readout-line {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.hud-readout .readout-line .rdot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--online);
+  flex-shrink: 0;
+}
+.hud-readout #readoutStatus {
+  color: var(--ink-100);
+}
+.hud-readout .cursor-blink {
+  display: inline-block;
+  width: 6px;
+  height: 1em;
+  background: var(--cyan);
+  margin-left: 2px;
+  vertical-align: text-bottom;
+  animation: cursor-blink 1s step-end infinite;
+}
+@keyframes cursor-blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+@media (max-width: 900px) {
+  .hero-visual { max-width: 380px; }
+}
+
+/* ------------------------------------------------------------------ */
+/* AI Technology section — algorithm cards */
+/* ------------------------------------------------------------------ */
+.algo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--sp-3);
+}
+
+.algo-card {
+  position: relative;
+  padding: var(--sp-4) var(--sp-3);
+  border-radius: var(--radius-m);
+  cursor: default;
+  overflow: hidden;
+  transition: transform var(--dur-mid) var(--ease-out),
+              border-color var(--dur-fast) var(--ease-out),
+              background var(--dur-mid) var(--ease-out);
+}
+
+.algo-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(180px circle at var(--mx, 50%) var(--my, 0%), rgba(198, 185, 138, 0.14), transparent 65%);
+  opacity: 0;
+  transition: opacity var(--dur-mid) var(--ease-out);
+  pointer-events: none;
+}
+
+.algo-card:hover {
+  transform: translateY(-5px);
+  border-color: var(--cyan-soft);
+}
+.algo-card:hover::before { opacity: 1; }
+
+.algo-card .algo-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  background: rgba(198, 185, 138, 0.08);
+  border: 1px solid var(--panel-border);
+  color: var(--cyan);
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin-bottom: var(--sp-3);
+  transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+.algo-card:hover .algo-icon {
+  background: var(--cyan);
+  color: var(--void);
+}
+
+.algo-card h3 {
+  font-family: var(--font-display);
+  text-transform: none;
+  letter-spacing: 0.02em;
+  font-size: 0.95rem;
+  color: var(--ink-100);
+  margin-bottom: 0.4rem;
+}
+
+.algo-card p {
+  font-size: 0.86rem;
+  margin: 0;
+  color: var(--ink-400);
+}
+
+/* ------------------------------------------------------------------ */
+/* Feature section — distinct accent-per-card */
+/* ------------------------------------------------------------------ */
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--sp-4);
+}
+
+.feature-card {
+  padding: var(--sp-4);
+  border-radius: var(--radius-m);
+  border-top: 2px solid var(--accent, var(--cyan));
+  transition: transform var(--dur-mid) var(--ease-out);
+}
+.feature-card:hover { transform: translateY(-4px); }
+
+.feature-card .feature-index {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  color: var(--accent, var(--cyan));
+  margin-bottom: var(--sp-2);
+  display: block;
+}
+
+.feature-card h3 {
+  font-size: 1.02rem;
+  text-transform: none;
+  letter-spacing: 0.01em;
+  color: var(--ink-100);
+  margin-bottom: var(--sp-2);
+}
+.feature-card p { font-size: 0.92rem; margin: 0; }
+
+/* ------------------------------------------------------------------ */
+/* Stats section */
+/* ------------------------------------------------------------------ */
+.stats-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1px;
+  background: var(--panel-border);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius-l);
+  overflow: hidden;
+}
+
+.stat-block {
+  background: rgba(33, 38, 26, 0.75);
+  padding: var(--sp-5) var(--sp-4);
+  text-align: center;
+}
+
+.stat-block .stat-number {
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 3vw, 2.6rem);
+  color: var(--cyan);
+  display: block;
+  margin-bottom: 0.4rem;
+}
+
+.stat-block .stat-caption {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-400);
+}
+
+/* ------------------------------------------------------------------ */
+/* Scroll reveal utility */
+/* ------------------------------------------------------------------ */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 700ms var(--ease-out), transform 700ms var(--ease-out);
+}
+.reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.reveal-stagger > * {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 600ms var(--ease-out), transform 600ms var(--ease-out);
+}
+.reveal-stagger.is-visible > * {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal, .reveal-stagger > * {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Page fade-in transition */
+/* ------------------------------------------------------------------ */
+body {
+  animation: page-fade-in 500ms var(--ease-out);
+}
+@keyframes page-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
